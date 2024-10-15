@@ -26,8 +26,8 @@ def print_welcome_message():
 
     def print_multiplication_table():
         print("\nMultiplication Table (1 to 20):")
-
         # print(tabulate([[i] + [i * j for j in range(1, 21)] for i in range(1, 21)], headers=[str(i) for i in range(1, 21)], tablefmt="grid"))
+
 
         # Print the header row with correct formatting and consistent width
         print("{:<5}".format(""), end="")  # First empty space
@@ -85,7 +85,7 @@ def get_random_numbers():
             return random.choice(list(important_cubes.values())), 'cube'
 
 
-def get_user_input(timeout=3):
+def get_user_input(timeout=5):
     start_time = time.time()
     print("Your answer: ", end='', flush=True)
     ready, _, _ = select.select([sys.stdin], [], [], timeout)
@@ -111,7 +111,7 @@ def ask_question(performance_tracker):
         print(f"\nMultiply: {num1} x {num2}")
         correct_answer = num1 * num2
 
-    answer, elapsed_time = get_user_input(timeout=3)
+    answer, elapsed_time = get_user_input(timeout=5)
 
     if answer is None:
         print(Fore.YELLOW + "Too slow!" + Style.RESET_ALL)
@@ -131,7 +131,7 @@ def ask_question(performance_tracker):
         answer = None  # In case of non-numeric input
 
     # Check if the user answered correctly and within 2.5 seconds
-    if elapsed_time > 2.5:
+    if elapsed_time > 3.5:
         print(Fore.YELLOW + f"Too slow! ({elapsed_time:.2f}s)" + Style.RESET_ALL)
         print(Fore.RED + f"The correct answer was: {correct_answer}" + Style.RESET_ALL)
     elif answer == correct_answer:
