@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplication Trainer</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Multiplication Trainer</h1>
+        <div id="question-area">
+            <p id="question">Press 'Enter' to start the game!</p>
+        </div>
+        <input type="number" id="answer" placeholder="Your answer">
+        <button id="submitBtn" onclick="submitAnswer()">Submit</button>
+        <button id="startBtn" onclick="startGame()">Start</button>
+        <button onclick="exitGame()">Exit</button>
+
+        <p id="timer">Time left: 5 seconds</p>
+
+        <div id="feedback"></div>
+    </div>
+
+    <script>
+        let currentQuestion = {};
+        let timeLeft = 5;
+        let timerInterval;
+
+        // Event listener to capture "Enter" key presses
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "Enter") {
+                const answerInput = document.getElementById('answer');
+                if (answerInput === document.activeElement) {
+                    // If the answer input is active, submit the answer
+                    submitAnswer();
+                } else if (!currentQuestion.num1) {
+                    // If the game hasn't started, pressing Enter starts the game
+                    startGame();
+                }
+            }
+        });
+
+        function startGame() {
+            fetch('/get_question')
+                .then(response => response.json())
+                .then(data => {
+                    currentQuestion = data;
+                    displayQuestion();
+                    startTimer();
+                });
+        }
+
+        function startTimer() {
+            timeLeft = 5;
+            document.getElementById('timer').textContent = `Time left: ${timeLeft} seconds`;
+            clearInterval(timerInterval);  // Clear any existing timer
+            timerInterval = setInterval(function () {
+                timeLeft--;
+                document.getElementById('timer').textContent = `Time left: ${timeLeft} seconds`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitAnswer(true);  // Automatically submit an answer after time runs out
+                }
+            }, 1000);
+        }
+
+        function displayQuestion() {
+            const { num1, num2 } = currentQuestion;
+            let questionText = '';
+            if (num2 === 'square') {
+                questionText = `What is the square of ${num1}?`;
+            } else if (num2 === 'cube') {
+                questionText = `What is the cube of ${num1}?`;
+            } else {
+                questionText = `What is ${num1} x ${num2}?`;
+            }
+            document.getElementById('question').textContent = questionText;
+            document.getElementById('answer').value = '';  // Clear previous answer
+            document.getElementById('answer').focus();  // Automatically focus on the input box
+        }
+
+        function sanitizeInput(input) {
+            return input.trim().replace(/[^0-9]/g, '');  // Remove spaces and non-numeric characters
+        }
+
+        function submitAnswer(auto = false) {
+            const answer = sanitizeInput(document.getElementById('answer').value);
+
+            fetch('/submit_answer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...currentQuestion, answer: auto ? -1 : answer })  // Submit -1 if auto-submitting after timeout
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const feedback = document.getElementById('feedback');
+                    if (data.result === 'correct') {
+                        feedback.textContent = "Correct!";
+                    } else {
+                        feedback.textContent = `Incorrect! The correct answer was: ${data.correct_answer}`;
+                    }
+                    startGame();  // Move to next question
+                });
+        }
+
+        function exitGame() {
+            fetch('/performance')
+                .then(response => response.json())
+                .then(data => {
+                    const feedback = document.getElementById('feedback');
+                    feedback.innerHTML = `<h3>Your Performance:</h3>`;
+                    data.forEach(item => {
+                        feedback.innerHTML += `<p>${item.pair}: ${item.correct} correct, ${item.incorrect} incorrect</p>`;
+                    });
+                    clearInterval(timerInterval);  // Stop the timer when the game ends
+                });
+        }
+    </script>
+</body>
+</html>
