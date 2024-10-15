@@ -13,8 +13,8 @@ from tabulate import tabulate
 colorama.init()
 
 # Define important squares and cubes for SAT
-important_squares = {i: i * i for i in range(1, 13)}  # Squares until 12^2
-important_cubes = {i: i * i * i for i in range(1, 5)}  # Cubes until 4^3
+important_squares = {i: i ** 2 for i in range(1, 13)}  # Squares until 12^2
+important_cubes = {i: i ** 3 for i in range(1, 5)}  # Cubes until 4^3
 important_power = {**important_squares, **important_cubes}  # Combine squares and cubes
 
 
@@ -25,30 +25,35 @@ def print_welcome_message():
     input("Press Enter to proceed...")
 
     def print_multiplication_table():
-        print("Multiplication Table (1 to 20):")
-        print("    ", end="")
+        print("\nMultiplication Table (1 to 20):")
+
+        # print(tabulate([[i] + [i * j for j in range(1, 21)] for i in range(1, 21)], headers=[str(i) for i in range(1, 21)], tablefmt="grid"))
+
+        # Print the header row with correct formatting and consistent width
+        print("{:<5}".format(""), end="")  # First empty space
         for i in range(1, 21):
-            print(f"{i:4}", end="")
-        print("\n" + "-" * 85)
+            print("{:>5}".format(i), end="")
+        print("\n" + "-" * 105)  # Separator line
+
+        # Print each row of the table
         for i in range(1, 21):
-            print(f"{i:2} |", end="")
+            print("{:>2} | ".format(i), end="")  # The row number, formatted properly
             for j in range(1, 21):
                 product = i * j
-                if (i in range(7, 13) and j in range(7, 13)) or (i in range(13, 21) and j in range(13, 21)):
-                    print(f"\033[1m{product:4}\033[0m", end="")  # Bold text
-                else:
-                    print(f"{product:4}", end="")
-            print()
+                print("{:>5}".format(product), end="")  # Each product formatted to fit 4-character wide columns
+            print()  # Newline after each row
         print()
 
     def print_powers_table():
         print("Important Squares and Cubes:")
-        print("Number | Square | Cube")
-        print("-----------------------")
+        # print(tabulate([[i, i ** 2, i ** 3 if i <= 4 else ''] for i in range(1, 13)], headers=["Number", "Square", "Cube"], tablefmt="grid"))
+        print("{:<6} | {:<6} | {:<6}".format("Number", "Square", "Cube"))
+        print("-" * 24)
+
         for i in range(1, 13):
-            square = important_squares[i]
-            cube = important_cubes[i] if i in important_cubes else ""
-            print(f"{i:6} | {square:6} | {cube:4}")
+            square = i ** 2
+            cube = i ** 3 if i <= 4 else ""
+            print("{:<6} | {:<6} | {:<6}".format(i, square, cube))
         print()
 
     print_multiplication_table()  # Print the multiplication table at the beginning
@@ -135,54 +140,6 @@ def ask_question(performance_tracker):
     else:
         print(Fore.RED + f"Incorrect! The correct answer was: {correct_answer}" + Style.RESET_ALL)
         update_performance(num1, num2, False, performance_tracker)
-
-
-# def ask_question(performance_tracker):
-#     num1, num2 = get_random_numbers()
-#
-#     if num2 == 'square':
-#         print("\nThe number {num2} is square of:")
-#         correct_answer = important_squares[num1]
-#     elif num2 == 'cube':
-#         print("\nThe number {num1} is cube of:")
-#         correct_answer = important_cubes[num1]
-#     else:
-#         print(f"\nMultiply: {num1} x {num2}")
-#         correct_answer = num1 * num2
-#     start_time = time.time()
-#
-#     # Get user input with a timer
-#     try:
-#         # wait for user input only for 3 seconds
-#         print("Your answer: ", end='', flush=True)
-#         ready, _, _ = select.select([sys.stdin], [], [], 3)
-#         if ready:
-#             answer = sys.stdin.readline().strip()
-#             elapsed_time = time.time() - start_time
-#         else:
-#             print(Fore.YELLOW + "Too slow!" + Style.RESET_ALL)
-#             print(Fore.RED + f"The correct answer was: {correct_answer}" + Style.RESET_ALL)
-#             update_performance(num1, num2, False, performance_tracker)
-#             return
-#         # End game if user enters 'q'
-#         if answer == 'q':
-#             print_performance(performance_tracker)
-#             print("Exiting the game...")
-#             exit()
-#         answer = int(answer)
-#     except ValueError:
-#         answer = None  # In case of non-numeric input
-#
-#     # Check if the user answered correctly and within 2.5 seconds
-#     if elapsed_time > 2.5:
-#         print(Fore.YELLOW + f"Too slow! ({elapsed_time:.2f}s)" + Style.RESET_ALL)
-#         print(Fore.RED + f"The correct answer was: {correct_answer}" + Style.RESET_ALL)
-#     elif answer == correct_answer:
-#         print(Fore.GREEN + "Correct!" + Style.RESET_ALL)
-#         update_performance(num1, num2, True, performance_tracker)
-#     else:
-#         print(Fore.RED + f"Incorrect! The correct answer was: {correct_answer}" + Style.RESET_ALL)
-#         update_performance(num1, num2, False, performance_tracker)
 
 
 def initialize_performance_tracker():
